@@ -5,7 +5,7 @@
 The following `.env` parameters can be set in order to work with this package.
 
 ```dotenv
-# Whether this gateway is available in the admin panel
+# Whether this gateway is bound to your application by this package.
 MOLLIE_BIND=true
 
 # The API Key you get from Mollie.com
@@ -15,7 +15,7 @@ MOLLIE_API_KEY=test_dHar4XY7LxsDOtmnkVtjNVWXLSlXsM
 ## Registration with Payments Module
 
 The module will automatically register the payment gateway with the Vanilo Payments registry by
-default. Having that, you can get a gateway instance directly from the Payment registry:
+default. You can get a gateway instance directly from the Payment registry:
 
 ```php
 $gateway = \Vanilo\Payment\PaymentGateways::make('mollie');
@@ -89,8 +89,9 @@ Gateway registry:
 $instance = \Vanilo\Payment\PaymentGateways::make('mollie');
 ```
 
-The default DI binding happens so that all the configuration parameters are read from the config values
-mentioned above. This will work out of the box and will be sufficient for most of the applications.
+The default DI binding happens so that all the configuration parameters are read from the config
+values mentioned above. This will work out of the box and will be sufficient for most of the
+applications.
 
 ### Manual Binding
 
@@ -111,16 +112,14 @@ This can be useful if the Gateway configuration can't be set in the env file, fo
 - Your app has **multiple payment methods** that use Mollie with **different credentials**
 - There is a **multi-tenant application**, where each tenant has their own credentials
 
-Setting `luttje.mollie.bind` to `false` will cause that the class doesn't get bound with the
-Laravel DI container automatically. Therefore, you need to do this yourself in your application,
-typically in the `AppServiceProvider::boot()` method:
+Setting `luttje.mollie.bind` to `false` will cause that the class doesn't get bound with the Laravel
+DI container automatically. Therefore, you need to do this yourself in your application, typically
+in the `AppServiceProvider::boot()` method:
 
 ```php
 $this->app->bind(MolliePaymentGateway::class, function ($app) {
     return new MolliePaymentGateway(
-        config('luttje.mollie.xxx'),  // You can use any source
-        config('luttje.mollie.yyy'),  // other than config()
-        config('luttje.mollie.zzz')  // for passing args
+        config('luttje.mollie.apiKey'),
     );
 });
 ```

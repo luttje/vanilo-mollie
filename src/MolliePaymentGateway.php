@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Luttje\Mollie;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Luttje\Mollie\Messages\MolliePaymentRequest;
 use Luttje\Mollie\Messages\MolliePaymentResponse;
 use Luttje\Mollie\Models\MolliePaymentStatus;

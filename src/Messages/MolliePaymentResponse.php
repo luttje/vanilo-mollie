@@ -85,7 +85,7 @@ class MolliePaymentResponse implements PaymentResponse
                     $this->status = PaymentStatusProxy::PAID();
                     break;
                 default:
-                    $this->status = PaymentStatusProxy::CANCELED();
+                    $this->status = PaymentStatusProxy::CANCELLED();
             }
         }
 

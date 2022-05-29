@@ -1,6 +1,6 @@
 # Examples
 
-The Example below shows parts of the code that you can put in your application.
+The example below shows parts of the code that you can put in your application.
 
 ### CheckoutController
 
@@ -34,8 +34,8 @@ class CheckoutController
 
 ### checkout/thank-you.blade.php
 
-This sample blade template contains a thank you page where you can render the payment initiation
-form:
+This sample blade template contains a thank you page where you can render the payment
+initiation/redirection form:
 
 **Blade Template:**
 
@@ -55,8 +55,14 @@ form:
     </div>
 @endsection
 ```
+*(The default redirection javascript will trigger immediately on page load, so don't spend much time
+on this page)*
+
 
 ### MollieReturnController
+
+This Controller forwards incoming webhooks from Mollie to this package. Additionally it shows the
+return page to which the user will be redirected from Mollie after payment:
 
 ```php
 namespace App\Http\Controllers;
@@ -74,8 +80,11 @@ class MollieReturnController extends Controller
 {
     public function return(Request $request, Payment $payment)
     {
-        // The webhook will know if the payment was successful. If it occurred on successful payment before we were returned (which is often the case) then $payment->status will be paid here.
+        // The webhook will let us know if the payment was successful before the user is returned here. 
+        // If the webhook occurred on successful payment then $payment->status will be paid here.
+        // dd($payment);
 
+        // The payment can have the `paid` status, but the order will still be pending. Someone will still have to process that.
         return view('order.being-processed');
     }
     
@@ -85,7 +94,7 @@ class MollieReturnController extends Controller
             'req' => $request->toArray(),
             'method' => $request->method(),
         ]);
-
+        
         $this->processPaymentResponse($request);
 
         return new JsonResponse(['message' => 'Received OK']);
@@ -93,7 +102,10 @@ class MollieReturnController extends Controller
 
     private function processPaymentResponse(Request $request): Payment
     {
+        // Forward the incoming webhook request to this package.
+        // You don't have to do much on that front, but should you be interested check out the Mollie php client @ https://github.com/mollie/mollie-api-php/blob/5906cf9ff3133a4f47fea47624f3839ac07d0805/examples/payments/webhook.php
         $response = PaymentGateways::make('mollie')->processPaymentResponse($request);
+
         $payment  = Payment::findByPaymentId($response->getPaymentId());
 
         if (!$payment) {
@@ -107,37 +119,6 @@ class MollieReturnController extends Controller
 
         return $payment;
     }
-}
-```
-
-**For more information on the Mollie webhook see:** https://github.com/mollie/mollie-api-php/blob/5906cf9ff3133a4f47fea47624f3839ac07d0805/examples/payments/webhook.php
-
-### Routes
-
-The routes for the Mollie Gateway should look like:
-
-```php
-//web.php
-Route::group(['prefix' => 'payment/mollie', 'as' => 'payment.mollie.'], function() {
-    Route::get('return/{payment}', [MollieReturnController::class, 'return'])->name('return');
-    Route::post('webhook', [MollieReturnController::class, 'webhook'])->name('webhook');
-});
-```
-
-**IMPORTANT!**: Make sure to **disable CSRF verification** for these URLs, by adding them as
-exceptions to `app/Http/Middleware/VerifyCsrfToken`:
-
-```php
-class VerifyCsrfToken extends Middleware
-{
-    /**
-     * The URIs that should be excluded from CSRF verification.
-     *
-     * @var array
-     */
-    protected $except = [
-        '/payment/mollie/*'
-    ];
 }
 ```
 
